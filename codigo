@@ -1,0 +1,99 @@
+//Cálculo de impostos e taxas de operações comerciais - João Pedro Duarte Mól
+
+class Item {
+    private String nome;
+    private double valor;
+    private boolean isProduto;
+
+    public Item(String nome, double valor, boolean isProduto) {
+        this.nome = nome;
+        this.valor = valor;
+        this.isProduto = isProduto;
+    }
+
+    public double getValor() {
+        return valor;
+    }
+
+    public boolean isProduto() {
+        return isProduto;
+    }
+
+    @Override
+    public String toString() {
+        return nome + ": R$" + String.format("%.2f", valor);
+    }
+}
+
+abstract class ImpostoTaxa {
+    protected double calcularImpostoTaxa(Item item) {
+        return 0.0;
+    }
+}
+
+class ISS extends ImpostoTaxa {
+    private static final double ALIQUOTA = 0.046;
+
+    @Override
+    protected double calcularImpostoTaxa(Item item) {
+        if (!item.isProduto()) {
+            return item.getValor() * ALIQUOTA;
+        }
+        return 0.0;
+    }
+}
+
+class ICMS extends ImpostoTaxa {
+    private static final double ALIQUOTA = 0.17;
+
+    @Override
+    protected double calcularImpostoTaxa(Item item) {
+        return item.getValor() * ALIQUOTA;
+    }
+}
+
+class IPI extends ImpostoTaxa {
+    private static final double ALIQUOTA = 0.25;
+
+    @Override
+    protected double calcularImpostoTaxa(Item item) {
+        if (item.isProduto()) {
+            return item.getValor() * ALIQUOTA;
+        }
+        return 0.0;
+    }
+}
+
+public class CalculadoraImpostos {
+    public static void main(String[] args) {
+        Item produto = new Item("Produto A", 100.0, true);
+        Item servico = new Item("Serviço B", 200.0, false);
+
+        ImpostoTaxa iss = new ISS();
+        ImpostoTaxa icms = new ICMS();
+        ImpostoTaxa ipi = new IPI();
+
+        calcularImpostosEExibirDetalhes(produto, iss, icms, ipi);
+        calcularImpostosEExibirDetalhes(servico, iss, icms, ipi);
+    }
+
+    private static void calcularImpostosEExibirDetalhes(Item item, ImpostoTaxa... impostos) {
+        double totalImpostos = 0.0;
+
+        System.out.println("Detalhes da Operação para " + item);
+        System.out.println("Preço Original do Item: " + item);
+
+        for (ImpostoTaxa imposto : impostos) {
+            double valorImposto = imposto.calcularImpostoTaxa(item);
+            totalImpostos += valorImposto;
+
+            if (valorImposto > 0) {
+                System.out.println(imposto.getClass().getSimpleName() + ": R$" + String.format("%.2f", valorImposto));
+            }
+        }
+
+        double valorTotal = item.getValor() + totalImpostos;
+        System.out.println("Valor Total da Operação: R$" + String.format("%.2f", valorTotal));
+        System.out.println();
+    }
+}
